@@ -14,6 +14,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final connector = Connector();
   List<Game> gameList = [];
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -22,7 +23,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> getGameList() async {
+    isLoading = true;
     gameList = await connector.getGameList();
+    isLoading = false;
     setState(() {});
   }
 
@@ -37,14 +40,16 @@ class _HomePageState extends State<HomePage> {
           return ListView.builder(
               itemCount: gameList.length,
               itemBuilder: (BuildContext context, int index) {
-                return ListTile(
-                  leading: const Icon(Icons.list), 
-                  title: Text(gameList[index].name ?? ""));
+                return ListTile(leading: const Icon(Icons.list), title: Text(gameList[index].name ?? ""));
               });
-        } else {
+        } else if (isLoading) {
           return const Center(child: CircularProgressIndicator());
+        } else {
+          return const Center(child: Text("No Data"));
         }
       }),
     );
   }
+
+
 }

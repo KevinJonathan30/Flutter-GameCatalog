@@ -14,7 +14,7 @@ class HomeRepository {
     try {
       Response response = await get(
         Uri.parse("$BASE_URL/games?key=$API_KEY")
-      ).timeout(const Duration(seconds: 15));
+      ).timeout(const Duration(seconds: 30));
 
       for (var i in jsonDecode(response.body)["results"]) {
         gameList.add(Game.fromJson(i));

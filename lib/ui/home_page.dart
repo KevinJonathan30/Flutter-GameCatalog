@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:game_catalog/model/game.dart';
-import 'package:game_catalog/resources/connector.dart';
+import 'package:game_catalog/controller/home_controller.dart';
+import 'package:game_catalog/helper/view_state.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.title});
@@ -12,21 +13,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final connector = Connector();
-  List<Game> gameList = [];
-  bool isLoading = true;
+  HomeController controller = HomeController();
 
   @override
   void initState() {
     super.initState();
     getGameList();
-  }
-
-  Future<void> getGameList() async {
-    isLoading = true;
-    gameList = await connector.getGameList();
-    isLoading = false;
-    setState(() {});
   }
 
   @override
@@ -36,20 +28,33 @@ class _HomePageState extends State<HomePage> {
         title: Text(widget.title),
       ),
       body: LayoutBuilder(builder: (context, _) {
-        if (gameList.isNotEmpty) {
-          return ListView.builder(
-              itemCount: gameList.length,
-              itemBuilder: (BuildContext context, int index) {
-                return ListTile(leading: const Icon(Icons.list), title: Text(gameList[index].name ?? ""));
-              });
-        } else if (isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else {
-          return const Center(child: Text("No Data"));
+        switch (controller.viewState) {
+          case ViewState.empty:
+            return const Center(child: Text("No Data"));
+          case ViewState.loading:
+            return const Center(child: CircularProgressIndicator());
+          case ViewState.loaded:
+            return ListView.builder(
+                itemCount: controller.gameList.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return ListTile(
+                      leading: FadeInImage.memoryNetwork(
+                        placeholder: kTransparentImage,
+                        image: controller.gameList[index].backgroundImage ?? "",
+                        height: 50,
+                        width: 50,
+                        fit: BoxFit.cover,
+                      ),
+                      title: Text(controller.gameList[index].name ?? ""));
+                });
         }
       }),
     );
   }
 
-
+  //Helper
+  Future<void> getGameList() async {
+    await controller.getGameList();
+    setState(() {});
+  }
 }
